@@ -260,8 +260,9 @@ fun getInfoFrequence (buttonType: String, nomDeLaTv: String): List<InformationTV
         val infoBouton = infoTV?.getJSONObject(buttonType)
             ?.getJSONObject("AvecProtocol")
         val InfoFrequence : InformationTV
-        InfoFrequence.address.add();
+        //InfoFrequence.address.add();
 
 
     }
+    return mesInfos;
 }
