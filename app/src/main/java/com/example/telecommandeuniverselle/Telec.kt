@@ -1,3 +1,6 @@
+import android.app.Application
+import android.content.Context
+import android.icu.text.IDNA.Info
 import android.widget.GridView
 import android.widget.LinearLayout
 import androidx.compose.foundation.Image
@@ -37,24 +40,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.telecommandeuniverselle.InformationTV
 import com.example.telecommandeuniverselle.R
 import org.json.JSONObject
+import java.io.InputStream
 
 @Composable
 fun Telec(nomDeLaTv: String) {
-    var isOn: Boolean = false
-    var volume: Int = 0
-    var currentChannel: Int = 1
 
-    Text(text = "Nom de la tele $nomDeLaTv")
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        Text(text = "Nom de la tele $nomDeLaTv " )
         Row(
             modifier = Modifier
                 //.background(Color.Blue)
@@ -97,13 +100,13 @@ fun Telec(nomDeLaTv: String) {
                         ) {
                             Icon(
                                 Icons.Default.KeyboardArrowUp,
-                                contentDescription = "Flèche montante",
+                                contentDescription = "volume plus",
                                 modifier = Modifier
                                     .size(50.dp),
                             )
                         }
 
-                        Text(text = "VOL",
+                        Text(text = "VOLUME",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
@@ -118,7 +121,7 @@ fun Telec(nomDeLaTv: String) {
                         ) {
                             Icon(
                                 Icons.Default.KeyboardArrowDown,
-                                contentDescription = "Flèche descendante",
+                                contentDescription = "volume moins",
                                 modifier = Modifier
                                     .size(50.dp),
                             )
@@ -126,6 +129,7 @@ fun Telec(nomDeLaTv: String) {
                     }
                 }
             }
+
 
             Column(
                 modifier = Modifier.weight(1f),
@@ -161,7 +165,7 @@ fun Telec(nomDeLaTv: String) {
                             )
                         }
 
-                        Text(text = "Chaine",
+                        Text(text = "CHAINE",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
@@ -176,7 +180,7 @@ fun Telec(nomDeLaTv: String) {
                         ) {
                             Icon(
                                 Icons.Default.ArrowBack,
-                                contentDescription = "CH",
+                                contentDescription = "chaine moins",
                                 modifier = Modifier
                                     .size(50.dp),
                             )
@@ -193,7 +197,6 @@ fun Telec(nomDeLaTv: String) {
 fun MyPowerButton() {
 
     val play = painterResource(id = R.drawable.fermer)
-
 
     IconButton(
         onClick = { /*TODO*/ },
@@ -218,9 +221,12 @@ fun MyPowerButton() {
     }
 }
 
-
 // Fonction pour récupérer les informations d'un téléviseur à partir de son nom
-fun getTVInfo(tvName: String, jsonString: String): JSONObject? {
+fun getTVInfo(tvName: String, context: Context): JSONObject? {
+    // Charger le fichier JSON à partir des ressources de l'application
+    val inputStream: InputStream = context.resources.openRawResource(R.raw.config)
+    val jsonString = inputStream.bufferedReader().use { it.readText() }
+
     // Convertir la chaîne JSON en objet JSON
     val jsonObject = JSONObject(jsonString)
 
@@ -243,3 +249,19 @@ fun getTVInfo(tvName: String, jsonString: String): JSONObject? {
     return null
 }
 
+@Composable
+fun getInfoFrequence (buttonType: String, nomDeLaTv: String): List<InformationTV>  {
+    val context = LocalContext.current
+    val mesInfos = mutableListOf<InformationTV>()
+    val infoTV = remember {
+        getTVInfo(nomDeLaTv, context)
+    }
+    if (nomDeLaTv=="Samsung"){
+        val infoBouton = infoTV?.getJSONObject(buttonType)
+            ?.getJSONObject("AvecProtocol")
+        val InfoFrequence : InformationTV
+        InfoFrequence.address.add();
+
+
+    }
+}
