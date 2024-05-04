@@ -1,18 +1,13 @@
-import android.app.Application
+package com.example.telecommandeuniverselle
+
 import android.content.Context
-import android.icu.text.IDNA.Info
-import android.widget.GridView
-import android.widget.LinearLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,33 +16,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.telecommandeuniverselle.InformationTV
-import com.example.telecommandeuniverselle.R
 import org.json.JSONObject
 import java.io.InputStream
 
@@ -172,8 +158,10 @@ fun Telec(nomDeLaTv: String) {
                             modifier = Modifier.padding(8.dp,18.dp)
                         )
 
+                        val info= getInfoFrequence(buttonType = "CH-", nomDeLaTv = nomDeLaTv )
+                        InformationTV.afficherListe(info)
                         IconButton(
-                            onClick = {/*TODO*/},
+                            onClick = {  },
                             modifier = Modifier
                                 .size(50.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -247,6 +235,8 @@ fun getTVInfo(tvName: String, context: Context): JSONObject? {
     // Retourner null si le téléviseur n'est pas trouvé
     return null
 }
+
+
 @Composable
 fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV> {
     val context = LocalContext.current
@@ -255,73 +245,103 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
         getTVInfo(nomDeLaTv, context)
     }
 
-    val infoBouton = infoTV?.getJSONObject(buttonType)
+    var infoBouton = infoTV?.getJSONObject(buttonType)
         ?.optJSONObject("AvecProtocol")
 
     // Si "AvecProtocol" est présent, récupérer également "SansProtocol"
-    if (infoBouton != null) {
-        // Récupérer les informations de "SansProtocol" s'il existe
-        val infoSansProtocol = infoTV.optJSONObject(buttonType)
-            ?.optJSONObject("SansProtocol")
+    if(infoBouton!=null){
+        val tmpProtocol = infoBouton?.getString("protocol")
+        val tmpAddress = infoBouton?.getString("address")
+        val tmpCommand = infoBouton?.getString("command")
+        var tmpCommand2:String?=null
+        var tmpCommand1: String?=null
 
-        infoSansProtocol?.let { sansProtocol ->
-            val protocolSansProtocol = sansProtocol.optString("frequency")
-            val addressSansProtocol = sansProtocol.optString("duty_cycle")
-            val commandSansProtocol = sansProtocol.optJSONObject("data")
-                ?.let { commandObject ->
-                    listOf(
-                        commandObject.optString("0"),
-                        commandObject.optString("1"),
-
-                    )
-                }
-
-            val infoSansProtocolFrequence = InformationTV(
-                protocol = protocolSansProtocol,
-                address = addressSansProtocol,
-                command = commandSansProtocol ?: emptyList()
+        if (infoBouton?.optString("protocol1")==null && infoBouton?.optString("command1")==null ){
+             tmpCommand1 = infoBouton?.optString("command1")
+             tmpCommand2 = infoBouton?.optString("command2")
+        }else if(infoBouton?.optString("protocol1")!=null){
+            val tmpProtocol1 = infoBouton?.getString("protocol1")
+            val tmpAddress1 = infoBouton?.getString("address1")
+            val tmpCommand4 = infoBouton?.getString("command1")
+            val infoNormaleFrequence = InformationTV(
+                type = "AvecProtocol",
+                protocol = tmpProtocol1,
+                address = tmpAddress1,
+                command = listOf(tmpCommand4)
             )
-
-            mesInfos.add(infoSansProtocolFrequence)
+            mesInfos.add(infoNormaleFrequence)
         }
-    }
-
-    // Récupérer les informations de "AvecProtocol" s'il existe
-    infoBouton?.let { avecProtocol ->
-        val protocolAvecProtocol = avecProtocol.optString("protocol")
-        val addressAvecProtocol = avecProtocol.optString("address")
-        val commandAvecProtocol = avecProtocol.optJSONObject("command")
-            ?.let { commandObject ->
-                listOf(
-                    commandObject.optString("0"),
-                    commandObject.optString("1"),
-                    commandObject.optString("2")
-                )
-            }
-
-        val infoAvecProtocolFrequence = InformationTV(
-            protocol = protocolAvecProtocol,
-            address = addressAvecProtocol,
-            command = commandAvecProtocol ?: emptyList()
-        )
-
-        mesInfos.add(infoAvecProtocolFrequence)
-    }
-
-    // Si ni "AvecProtocol" ni "SansProtocol" n'est présent, récupérer les informations normales
-    if (infoBouton == null) {
-        val infoNormale = infoTV?.optJSONObject(buttonType)
-        val protocolNormale = infoNormale?.optString("protocol")
-        val addressNormale = infoNormale?.optString("address")
-        val commandNormale = infoNormale?.optString("command")
-
-        val infoNormaleFrequence = InformationTV(
-            protocol = protocolNormale,
-            address = addressNormale,
-            command = listOf(commandNormale)
+        var infoNormaleFrequence = InformationTV(
+            type = "AvecProtocol",
+            protocol = tmpProtocol,
+            address = tmpAddress,
+            command = listOf(tmpCommand,tmpCommand1,tmpCommand2)
         )
 
         mesInfos.add(infoNormaleFrequence)
+
+        //Recuperation des info Sans Protocol
+        val infoBoutonSansProtocol= infoTV?.getJSONObject(buttonType)
+            ?.optJSONObject("SansProtocol")
+        val  frequency = infoBoutonSansProtocol?.getString("frequency")
+        val duty_cycle = infoBoutonSansProtocol?.getString("duty_cycle")
+        val data = infoBoutonSansProtocol?.getString("data")
+        val data1 = infoBoutonSansProtocol?.getString("data1")
+
+        infoNormaleFrequence = InformationTV(
+            type = "SansProtocol",
+            frequency = frequency,
+            duty_cycle = duty_cycle,
+            data = listOf(data, data1)
+        )
+
+        mesInfos.add(infoNormaleFrequence)
+
+    }else{
+        infoBouton = infoTV?.getJSONObject(buttonType)
+        val tmpProtocol = infoBouton?.getString("protocol")
+        val tmpAddress = infoBouton?.getString("address")
+        val tmpCommand = infoBouton?.getString("command")
+        var tmpCommand2:String?=null
+        var tmpCommand1: String?=null
+
+        if (infoBouton?.optString("protocol1")==null && infoBouton?.optString("command1")==null ){
+            tmpCommand1 = infoBouton?.optString("command1")
+            tmpCommand2 = infoBouton?.optString("command2")
+        }else if(infoBouton?.optString("protocol1")!=null){
+            val tmpProtocol1 = infoBouton?.getString("protocol1")
+            val tmpAddress1 = infoBouton?.getString("address1")
+            val tmpCommand4 = infoBouton?.getString("command1")
+            val infoNormaleFrequence = InformationTV(
+                type = "AvecProtocol",
+                protocol = tmpProtocol1,
+                address = tmpAddress1,
+                command = listOf(tmpCommand4)
+            )
+            mesInfos.add(infoNormaleFrequence)
+            if(infoBouton?.optString("protocol2")!=null) {
+                val tmpProtocol2 = infoBouton?.getString("protocol2")
+                val tmpAddress2 = infoBouton?.getString("address2")
+                val tmpCommand5 = infoBouton?.getString("command2")
+                val infoNormaleFrequence1 = InformationTV(
+                    type = "AvecProtocol",
+                    protocol = tmpProtocol2,
+                    address = tmpAddress2,
+                    command = listOf(tmpCommand5)
+                )
+                mesInfos.add(infoNormaleFrequence1)
+            }
+
+        }
+        val infoNormaleFrequence = InformationTV(
+            type = "AvecProtocol",
+            protocol = tmpProtocol,
+            address = tmpAddress,
+            command = listOf(tmpCommand,tmpCommand1,tmpCommand2)
+        )
+
+        mesInfos.add(infoNormaleFrequence)
+
     }
 
     return mesInfos
