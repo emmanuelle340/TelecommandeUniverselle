@@ -248,21 +248,82 @@ fun getTVInfo(tvName: String, context: Context): JSONObject? {
     // Retourner null si le téléviseur n'est pas trouvé
     return null
 }
-
 @Composable
-fun getInfoFrequence (buttonType: String, nomDeLaTv: String): List<InformationTV>  {
+fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV> {
     val context = LocalContext.current
     val mesInfos = mutableListOf<InformationTV>()
     val infoTV = remember {
         getTVInfo(nomDeLaTv, context)
     }
-    if (nomDeLaTv=="Samsung"){
-        val infoBouton = infoTV?.getJSONObject(buttonType)
-            ?.getJSONObject("AvecProtocol")
-        val InfoFrequence : InformationTV
-        //InfoFrequence.address.add();
 
+    val infoBouton = infoTV?.getJSONObject(buttonType)
+        ?.optJSONObject("AvecProtocol")
 
+    // Si "AvecProtocol" est présent, récupérer également "SansProtocol"
+    if (infoBouton != null) {
+        // Récupérer les informations de "SansProtocol" s'il existe
+        val infoSansProtocol = infoTV.optJSONObject(buttonType)
+            ?.optJSONObject("SansProtocol")
+
+        infoSansProtocol?.let { sansProtocol ->
+            val protocolSansProtocol = sansProtocol.optString("frequency")
+            val addressSansProtocol = sansProtocol.optString("duty_cycle")
+            val commandSansProtocol = sansProtocol.optJSONObject("data")
+                ?.let { commandObject ->
+                    listOf(
+                        commandObject.optString("0"),
+                        commandObject.optString("1"),
+
+                    )
+                }
+
+            val infoSansProtocolFrequence = InformationTV(
+                protocol = protocolSansProtocol,
+                address = addressSansProtocol,
+                command = commandSansProtocol ?: emptyList()
+            )
+
+            mesInfos.add(infoSansProtocolFrequence)
+        }
     }
-    return mesInfos;
+
+    // Récupérer les informations de "AvecProtocol" s'il existe
+    infoBouton?.let { avecProtocol ->
+        val protocolAvecProtocol = avecProtocol.optString("protocol")
+        val addressAvecProtocol = avecProtocol.optString("address")
+        val commandAvecProtocol = avecProtocol.optJSONObject("command")
+            ?.let { commandObject ->
+                listOf(
+                    commandObject.optString("0"),
+                    commandObject.optString("1"),
+                    commandObject.optString("2")
+                )
+            }
+
+        val infoAvecProtocolFrequence = InformationTV(
+            protocol = protocolAvecProtocol,
+            address = addressAvecProtocol,
+            command = commandAvecProtocol ?: emptyList()
+        )
+
+        mesInfos.add(infoAvecProtocolFrequence)
+    }
+
+    // Si ni "AvecProtocol" ni "SansProtocol" n'est présent, récupérer les informations normales
+    if (infoBouton == null) {
+        val infoNormale = infoTV?.optJSONObject(buttonType)
+        val protocolNormale = infoNormale?.optString("protocol")
+        val addressNormale = infoNormale?.optString("address")
+        val commandNormale = infoNormale?.optString("command")
+
+        val infoNormaleFrequence = InformationTV(
+            protocol = protocolNormale,
+            address = addressNormale,
+            command = listOf(commandNormale)
+        )
+
+        mesInfos.add(infoNormaleFrequence)
+    }
+
+    return mesInfos
 }
