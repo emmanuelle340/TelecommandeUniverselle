@@ -6,7 +6,7 @@ class InformationTV(
     val address: String? = null,
     val command: List<String?> = emptyList(),
     val frequency: String? = null,
-    val duty_cycle: String? = null,
+    val dutyCycle: String? = null,
     val data: List<String?> = emptyList()
 ){
     companion object {
@@ -17,7 +17,7 @@ class InformationTV(
                 println("Address: ${info.address}")
                 println("Command: ${info.command}")
                 println("Frequency: ${info.frequency}")
-                println("Duty Cycle: ${info.duty_cycle}")
+                println("Duty Cycle: ${info.dutyCycle}")
                 println("Data: ${info.data}")
                 println()
             }

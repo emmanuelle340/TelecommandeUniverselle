@@ -37,8 +37,12 @@ import androidx.compose.ui.unit.sp
 import org.json.JSONObject
 import java.io.InputStream
 
+
 @Composable
 fun Telec(nomDeLaTv: String) {
+
+
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -49,7 +53,7 @@ fun Telec(nomDeLaTv: String) {
                 //.background(Color.Blue)
                 .align(Alignment.Center)
                 .size(500.dp, 250.dp)
-                //.padding(20.dp),
+            //.padding(20.dp),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -158,8 +162,6 @@ fun Telec(nomDeLaTv: String) {
                             modifier = Modifier.padding(8.dp,18.dp)
                         )
 
-                        val info= getInfoFrequence(buttonType = "CH-", nomDeLaTv = nomDeLaTv )
-                        InformationTV.afficherListe(info)
                         IconButton(
                             onClick = {  },
                             modifier = Modifier
@@ -195,14 +197,14 @@ fun MyPowerButton() {
             .height(300.dp)
     ) {
 
-            Image(
-                painter = play,
-                contentDescription = "Play",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(Color(0x5485FA64)),
-            )
+        Image(
+            painter = play,
+            contentDescription = "Play",
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color(0x5485FA64)),
+        )
 
 
     }
@@ -251,18 +253,20 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
     // Si "AvecProtocol" est présent, récupérer également "SansProtocol"
     if(infoBouton!=null){
         val tmpProtocol = infoBouton?.getString("protocol")
-        val tmpAddress = infoBouton?.getString("address")
+        val tmpAddress = infoBouton.getString("address")
         val tmpCommand = infoBouton?.getString("command")
         var tmpCommand2:String?=null
         var tmpCommand1: String?=null
+        val protocol1 = infoBouton.optString("protocol1")
+        val command1 = infoBouton.optString("command1")
 
-        if (infoBouton?.optString("protocol1")==null && infoBouton?.optString("command1")==null ){
-             tmpCommand1 = infoBouton?.optString("command1")
-             tmpCommand2 = infoBouton?.optString("command2")
-        }else if(infoBouton?.optString("protocol1")!=null){
-            val tmpProtocol1 = infoBouton?.getString("protocol1")
-            val tmpAddress1 = infoBouton?.getString("address1")
-            val tmpCommand4 = infoBouton?.getString("command1")
+        if (protocol1.isEmpty() && command1.isNotEmpty()) {
+            tmpCommand1 = infoBouton.optString("command1")
+            tmpCommand2 = infoBouton.optString("command2")
+        } else if (protocol1.isNotEmpty()) {
+            val tmpProtocol1 = infoBouton.getString("protocol1")
+            val tmpAddress1 = infoBouton.getString("address1")
+            val tmpCommand4 = infoBouton.getString("command1")
             val infoNormaleFrequence = InformationTV(
                 type = "AvecProtocol",
                 protocol = tmpProtocol1,
@@ -291,7 +295,7 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
         infoNormaleFrequence = InformationTV(
             type = "SansProtocol",
             frequency = frequency,
-            duty_cycle = duty_cycle,
+            dutyCycle = duty_cycle,
             data = listOf(data, data1)
         )
 
@@ -304,11 +308,13 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
         val tmpCommand = infoBouton?.getString("command")
         var tmpCommand2:String?=null
         var tmpCommand1: String?=null
+        val protocol1 = infoBouton?.optString("protocol1")
+        val command1 = infoBouton?.optString("command1")
 
-        if (infoBouton?.optString("protocol1")==null && infoBouton?.optString("command1")==null ){
+        if (protocol1==null && command1!=null) {
             tmpCommand1 = infoBouton?.optString("command1")
             tmpCommand2 = infoBouton?.optString("command2")
-        }else if(infoBouton?.optString("protocol1")!=null){
+        } else if (protocol1!=null) {
             val tmpProtocol1 = infoBouton?.getString("protocol1")
             val tmpAddress1 = infoBouton?.getString("address1")
             val tmpCommand4 = infoBouton?.getString("command1")
@@ -320,9 +326,9 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
             )
             mesInfos.add(infoNormaleFrequence)
             if(infoBouton?.optString("protocol2")!=null) {
-                val tmpProtocol2 = infoBouton?.getString("protocol2")
-                val tmpAddress2 = infoBouton?.getString("address2")
-                val tmpCommand5 = infoBouton?.getString("command2")
+                val tmpProtocol2 = infoBouton.getString("protocol2")
+                val tmpAddress2 = infoBouton.getString("address2")
+                val tmpCommand5 = infoBouton.getString("command2")
                 val infoNormaleFrequence1 = InformationTV(
                     type = "AvecProtocol",
                     protocol = tmpProtocol2,
@@ -331,9 +337,8 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
                 )
                 mesInfos.add(infoNormaleFrequence1)
             }
-
         }
-        val infoNormaleFrequence = InformationTV(
+        var infoNormaleFrequence = InformationTV(
             type = "AvecProtocol",
             protocol = tmpProtocol,
             address = tmpAddress,
@@ -346,3 +351,4 @@ fun getInfoFrequence(buttonType: String, nomDeLaTv: String): List<InformationTV>
 
     return mesInfos
 }
+
