@@ -178,11 +178,10 @@ fun Telec(nomDeLaTv: String) {
                                 .size(50.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                            Icon(
-                                Icons.Default.ArrowBack,
-                                contentDescription = "chaine moins",
-                                modifier = Modifier
-                                    .size(50.dp),
+                            Text(
+                                text = "-",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 34.sp
                             )
                         }
                     }
